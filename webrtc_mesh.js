@@ -80,7 +80,7 @@ function startServerConnection(roomId, localId) {
 	}, 30000);
 }
 
-function startPeerConnection(id) {
+function startPeerConnection(id, sendOffer) {
 	if (peers.has(id)) {
 		peers.get(id)._stopPeerConnection();
 	}
@@ -140,24 +140,22 @@ function startPeerConnection(id) {
 		peers.delete(id);
 	};
 	peers.set(id, pc);
-	setTimeout(() => {
-		if (pc && !pc.remoteDescription) {
-			// Offerの作成
-			pc.createOffer().then(pc._setDescription).catch(errorHandler);
-		}
-	}, Math.floor(Math.random() * 1000));
+	if (sendOffer) {
+		// Offerの作成
+		pc.createOffer().then(pc._setDescription).catch(errorHandler);
+	}
 }
 
 function gotMessageFromServer(message) {
 	const signal = JSON.parse(message.data);
 	if (signal.start) {
-		// 同じ部屋のすべてのPeerとの接続を開始する
-		signal.start.forEach(data => startPeerConnection(data.id));
+		// 同じ部屋のすべてのPeerとの接続を開始する(Offer側)
+		signal.start.forEach(data => startPeerConnection(data.id, true));
 		return;
 	}
 	if (signal.join) {
-		// 新規参加者通知
-		startPeerConnection(signal.join);
+		// 新規参加者通知(Answer側)
+		startPeerConnection(signal.join, false);
 		return;
 	}
 	if (signal.ping) {
@@ -176,10 +174,6 @@ function gotMessageFromServer(message) {
 	// 以降はWebRTCのシグナリング処理
 	if (signal.sdp) {
 		// SDP受信
-		if (pc.remoteDescription) {
-			startPeerConnection(signal.src);
-			return;
-		}
 		if (signal.sdp.type === 'offer') {
 			pc.setRemoteDescription(signal.sdp).then(() => {
 				// Answerの作成
