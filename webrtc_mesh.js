@@ -42,7 +42,7 @@ function startVideo(roomId, localId) {
 			audio: true,
 			video: true
 		};
-		navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+		navigator.mediaDevices.getUserMedia(constraints).then(stream => {
 			window.stream = stream;
 			localVideo.srcObject = stream;
 			startServerConnection(roomId, localId);
@@ -67,14 +67,14 @@ function startServerConnection(roomId, localId) {
 	};
 	sc.onclose = function(event) {
 		clearInterval(this._pingTimer);
-		setTimeout(function(conn) {
+		setTimeout(conn => {
 			if (sc === conn) {
 				// 一定時間経過後にサーバーへ再接続
 				startServerConnection(roomId, localId);
 			}
 		}, 5000, this);
 	}
-	sc._pingTimer = setInterval(function() {
+	sc._pingTimer = setInterval(() => {
 		// 接続確認
 		sc.send(JSON.stringify({ping: 1}));
 	}, 30000);
@@ -91,7 +91,7 @@ function startPeerConnection(id) {
 	pc._queue = new Array();
 	pc._setDescription = function(description) {
 		if (pc) {
-			pc.setLocalDescription(description).then(function() {
+			pc.setLocalDescription(description).then(() => {
 				// SDP送信
 				sc.send(JSON.stringify({sdp: pc.localDescription, room: roomId, src: localId, dest: id}));
 			}).catch(errorHandler);
@@ -140,7 +140,7 @@ function startPeerConnection(id) {
 		peers.delete(id);
 	};
 	peers.set(id, pc);
-	setTimeout(function() {
+	setTimeout(() => {
 		if (pc && !pc.remoteDescription) {
 			// Offerの作成
 			pc.createOffer().then(pc._setDescription).catch(errorHandler);
@@ -151,12 +151,12 @@ function startPeerConnection(id) {
 function gotMessageFromServer(message) {
 	const signal = JSON.parse(message.data);
 	if (signal.start) {
-		// すべてのPeerとの接続を開始する
-		signal.start.forEach((data) => startPeerConnection(data.id));
+		// 同じ部屋のすべてのPeerとの接続を開始する
+		signal.start.forEach(data => startPeerConnection(data.id));
 		return;
 	}
 	if (signal.join) {
-		// 新規参加
+		// 新規参加者通知
 		startPeerConnection(signal.join);
 		return;
 	}
@@ -169,7 +169,7 @@ function gotMessageFromServer(message) {
 		return;
 	}
 	if (signal.part) {
-		// 接続先の退出通知
+		// 退出通知
 		pc._stopPeerConnection();
 		return;
 	}
@@ -181,7 +181,7 @@ function gotMessageFromServer(message) {
 			return;
 		}
 		if (signal.sdp.type === 'offer') {
-			pc.setRemoteDescription(signal.sdp).then(function() {
+			pc.setRemoteDescription(signal.sdp).then(() => {
 				// Answerの作成
 				pc.createAnswer().then(pc._setDescription).catch(errorHandler);
 			}).catch(errorHandler);

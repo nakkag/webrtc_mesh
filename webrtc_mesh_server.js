@@ -15,7 +15,7 @@ let connections = [];
 
 // WebSocket処理
 const socketProc = function(ws, req) {
-	ws._pingTimer = setInterval(function() {
+	ws._pingTimer = setInterval(() => {
 		if (ws.readyState === WebSocket.OPEN) {
 			// 接続確認
 			ws.send(JSON.stringify({ping: 1}));
@@ -32,7 +32,7 @@ const socketProc = function(ws, req) {
 			connections.push({room: json.join.room, id: json.join.id, ws: ws});
 			// Roomメンバーの一覧を返す
 			const member = [];
-			connections.forEach(function(data) {
+			connections.forEach(data => {
 				if (data.room === json.join.room && data.id !== json.join.id && data.ws.readyState === WebSocket.OPEN) {
 					member.push({id: data.id});
 					// 新規参加を通知
@@ -52,7 +52,7 @@ const socketProc = function(ws, req) {
 			return;
 		}
 		// Peerを検索
-		connections.some(function(data) {
+		connections.some(data => {
 			if (data.room === json.room && data.id === json.dest && data.ws.readyState === WebSocket.OPEN) {
 				// メッセージの転送
 				data.ws.send(JSON.stringify(json));
@@ -71,12 +71,12 @@ const socketProc = function(ws, req) {
 	});
 
 	function closeConnection(conn) {
-		connections = connections.filter(function (data) {
+		connections = connections.filter(data => {
 			if (data.ws !== conn) {
 				return true;
 			}
 			console.log(ws._socket.remoteAddress + ': part room=' + data.room + ', id=' + data.id);
-			connections.forEach(function(roomData) {
+			connections.forEach(roomData => {
 				if (data.room === roomData.room && data.id !== roomData.id && roomData.ws.readyState === WebSocket.OPEN) {
 					// 退出を通知
 					roomData.ws.send(JSON.stringify({part: 1, src: data.id}));
