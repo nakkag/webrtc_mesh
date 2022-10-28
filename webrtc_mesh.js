@@ -80,7 +80,7 @@ function startServerConnection(roomId, localId) {
 	}, 30000);
 }
 
-function startPeerConnection(id, sendOffer) {
+function startPeerConnection(id, sdpType) {
 	if (peers.has(id)) {
 		peers.get(id)._stopPeerConnection();
 	}
@@ -140,7 +140,7 @@ function startPeerConnection(id, sendOffer) {
 		peers.delete(id);
 	};
 	peers.set(id, pc);
-	if (sendOffer) {
+	if (sdpType === 'offer') {
 		// Offerの作成
 		pc.createOffer().then(pc._setDescription).catch(errorHandler);
 	}
@@ -150,12 +150,12 @@ function gotMessageFromServer(message) {
 	const signal = JSON.parse(message.data);
 	if (signal.start) {
 		// 同じ部屋のすべてのPeerとの接続を開始する(Offer側)
-		signal.start.forEach(data => startPeerConnection(data.id, true));
+		signal.start.forEach(data => startPeerConnection(data.id, 'offer'));
 		return;
 	}
 	if (signal.join) {
 		// 新規参加者通知(Answer側)
-		startPeerConnection(signal.join, false);
+		startPeerConnection(signal.join, 'answer');
 		return;
 	}
 	if (signal.ping) {
