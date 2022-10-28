@@ -35,7 +35,7 @@ const socketProc = function(ws, req) {
 			connections.forEach(data => {
 				if (data.room === json.join.room && data.id !== json.join.id && data.ws.readyState === WebSocket.OPEN) {
 					member.push({id: data.id});
-					// 新規参加を通知
+					// 新規参加者を通知
 					data.ws.send(JSON.stringify({join: json.join.id}));
 				}
 			});
@@ -115,9 +115,9 @@ const service = function(req, res) {
 };
 
 // HTTPSサーバの開始
-const httpsCamServer = https.createServer(serverConfig, service);
-httpsCamServer.listen(sslPort, '0.0.0.0');
+const httpsServer = https.createServer(serverConfig, service);
+httpsServer.listen(sslPort, '0.0.0.0');
 // WebSocketの開始
-const wss_cam = new WebSocket.Server({server: httpsCamServer});
-wss_cam.on('connection', socketProc);
+const wss = new WebSocket.Server({server: httpsServer});
+wss.on('connection', socketProc);
 console.log('Server running.');
