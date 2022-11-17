@@ -47,7 +47,7 @@ function startVideo(roomId, localId) {
 			localVideo.srcObject = stream;
 			startServerConnection(roomId, localId);
 		}).catch(e => {
-			alert('Camera start error.\n\n' + error);
+			alert('Camera start error.\n\n' + e.name + ': ' + e.message);
 		});
 	} else {
 		alert('Your browser does not support getUserMedia API');
