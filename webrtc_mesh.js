@@ -46,8 +46,8 @@ function startVideo(roomId, localId) {
 			window.stream = stream;
 			localVideo.srcObject = stream;
 			startServerConnection(roomId, localId);
-		}).catch(error => {
-			alert('Camera start error.\n\n' + error.name + ': ' + error.message);
+		}).catch(e => {
+			alert('Camera start error.\n\n' + e.name + ': ' + e.message);
 		});
 	} else {
 		alert('Your browser does not support getUserMedia API');
@@ -186,9 +186,9 @@ function gotMessageFromServer(message) {
 	if (signal.ice) {
 		// ICE受信
 		if (pc.remoteDescription) {
-			pc.addIceCandidate(new RTCIceCandidate(signal.ice)).catch(error => {
+			pc.addIceCandidate(new RTCIceCandidate(signal.ice)).catch(e => {
 				pc._queue = new Array();
-				errorHandler(error);
+				errorHandler(e);
 			});
 		} else {
 			// SDPが未処理のためキューに貯める
