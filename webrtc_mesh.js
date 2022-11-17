@@ -186,7 +186,10 @@ function gotMessageFromServer(message) {
 	if (signal.ice) {
 		// ICE受信
 		if (pc.remoteDescription) {
-			pc.addIceCandidate(new RTCIceCandidate(signal.ice)).catch(errorHandler);
+			pc.addIceCandidate(new RTCIceCandidate(signal.ice)).catch(function(error) {
+				pc._queue = new Array();
+				errorHandler(error);
+			});
 		} else {
 			// SDPが未処理のためキューに貯める
 			pc._queue.push(message);
@@ -200,5 +203,5 @@ function gotMessageFromServer(message) {
 }
 
 function errorHandler(error) {
-	alert('Signaling error.\n\n' + error);
+	alert('Signaling error.\n\n' + error.name + ': ' + error.message);
 }
