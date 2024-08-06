@@ -30,16 +30,12 @@ const socketProc = function(ws, req) {
 			connections = connections.filter(data => !(data.room === json.join.room && data.id === json.join.id));
 			// 接続情報を保存
 			connections.push({room: json.join.room, id: json.join.id, ws: ws});
-			// Roomメンバーの一覧を返す
-			const member = [];
 			connections.forEach(data => {
 				if (data.room === json.join.room && data.id !== json.join.id && data.ws.readyState === WebSocket.OPEN) {
-					member.push({id: data.id});
 					// 新規参加者を通知
 					data.ws.send(JSON.stringify({join: json.join.id}));
 				}
 			});
-			ws.send(JSON.stringify({start: member}));
 			return;
 		}
 		if (json.pong) {

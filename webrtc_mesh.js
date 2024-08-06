@@ -98,7 +98,7 @@ function startPeerConnection(id, sdpType) {
 		}
 	}
 	pc.onicecandidate = function(event) {
-		if (event.candidate) {
+		if (event && event.candidate) {
 			// ICE送信
 			sc.send(JSON.stringify({ice: event.candidate, room: roomId, src: localId, dest: id}));
 		}
@@ -144,25 +144,25 @@ function startPeerConnection(id, sdpType) {
 		// Offerの作成
 		pc.createOffer().then(pc._setDescription).catch(errorHandler);
 	}
+	return pc;
 }
 
 function gotMessageFromServer(message) {
 	const signal = JSON.parse(message.data);
-	if (signal.start) {
-		// 同じ部屋のすべてのPeerとの接続を開始する(Offer側)
-		signal.start.forEach(data => startPeerConnection(data.id, 'offer'));
-		return;
-	}
 	if (signal.join) {
-		// 新規参加者通知(Answer側)
-		startPeerConnection(signal.join, 'answer');
+		// 新規参加者にofferを送る
+		startPeerConnection(signal.join, 'offer');
 		return;
 	}
 	if (signal.ping) {
 		sc.send(JSON.stringify({pong: 1}));
 		return;
 	}
-	const pc = peers.get(signal.src);
+	let pc = peers.get(signal.src);
+	if (!pc && (signal.sdp || signal.ice)) {
+		// answer側のPeerConnectionを追加
+		pc = startPeerConnection(signal.src, 'answer');
+	}
 	if (!pc) {
 		return;
 	}
