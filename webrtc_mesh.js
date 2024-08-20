@@ -98,7 +98,7 @@ function startPeerConnection(id, sdpType) {
 		}
 	}
 	pc.onicecandidate = function(event) {
-		if (event && event.candidate) {
+		if (event.candidate) {
 			// ICE送信
 			sc.send(JSON.stringify({ice: event.candidate, room: roomId, src: localId, dest: id}));
 		}
